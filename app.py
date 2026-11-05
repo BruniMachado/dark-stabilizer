@@ -23,7 +23,7 @@ PRESETS = {
     "1. Temperamento (Frio + Sombras Densas + Vinheta)": {
         "contrast": 1.25, "brightness": -0.05, "saturation": 0.68,
         "extra_filter": "colorbalance=bs=0.08:bm=0.05:rh=-0.03",
-        "vignette": True, "red_reduce": False, " sharp": 0.9
+        "vignette": True, "red_reduce": False, "sharp": 0.9
     },
     "2. Black & Grey Master (P&B Realismo Profundo)": {
         "contrast": 1.38, "brightness": -0.04, "saturation": 0.0,
@@ -121,7 +121,6 @@ if st.button("🔥 PROCESSAR VÍDEO NO DARK LAB", use_container_width=True):
         try:
             video_fonte = input_path
 
-            # Se o usuário pediu para cortar o início ou limitar duração
             if cortar_inicio > 0 or duracao_max > 0:
                 barra.progress(10, text="Cortando início/fim do vídeo...")
                 cmd_trim = ["ffmpeg", "-y"]
@@ -136,7 +135,6 @@ if st.button("🔥 PROCESSAR VÍDEO NO DARK LAB", use_container_width=True):
 
             filtros = []
 
-            # Passo 1: Estabilização Two-Pass
             if suavizacao > 0:
                 barra.progress(25, text="1/2: Analisando tremedeira da mão...")
                 cmd_passo1 = [
@@ -149,36 +147,28 @@ if st.button("🔥 PROCESSAR VÍDEO NO DARK LAB", use_container_width=True):
 
             barra.progress(60, text="2/2: Aplicando estética Dark, corrigindo pele e renderizando...")
 
-            # Enquadramento 9:16 ou Otimização 1080p
             if formato_reels:
                 filtros.append("scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920")
             else:
                 filtros.append("scale='min(1080,iw)':-2")
 
-            # Nitidez nos traços da tattoo
             if nitidez > 0:
                 filtros.append(f"unsharp=5:5:{nitidez}:3:3:0.4")
 
-            # Redutor de vermelhidão da pele irritada (atua se o vídeo não for P&B)
             if reduzir_vermelho and saturacao > 0:
                 filtros.append("colorbalance=rs=-0.12:rm=-0.08:rh=-0.04:bs=0.04")
 
-            # Filtro Polarizador Digital (segura o estouro branco da luz na pele)
             if anti_reflexo:
                 filtros.append("curves=m='0/0 0.5/0.5 0.85/0.82 1/0.90'")
 
-            # Ajuste base de Contraste, Brilho e Saturação
             filtros.append(f"eq=contrast={contraste}:brightness={brilho}:saturation={saturacao}")
 
-            # Filtro extra específico do Preset escolhido
             if p_base["extra_filter"]:
                 filtros.append(p_base["extra_filter"])
 
-            # Granulado estilo filme
             if granulado > 0:
                 filtros.append(f"noise=alls={granulado}:allf=t+u")
 
-            # Vinheta escura
             if usar_vinheta:
                 filtros.append("vignette=PI/4")
 
